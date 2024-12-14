@@ -1,5 +1,6 @@
 // Unit tests for: query
 
+import { AbstractAssembler, AggregateQuery, AggregateResponse, Assembler, DeepPartial, Query, transformAggregateQuery, transformAggregateResponse, transformQuery } from '@owl-app/nestjs-query-core';
 import { QueryOptions } from '../../interfaces/query-options';
 import { AppAssemblerQueryService } from '../app-assembler-query.service';
 
@@ -8,22 +9,84 @@ class MockQuery {
   // Define necessary properties and methods for the mock
 }
 
-class MockAssembler {
-  convertAsyncToDTOs = jest.fn();
-  convertQuery = jest.fn();
-}
-
 class MockAppQueryService {
   query = jest.fn();
 }
 
 describe('AppAssemblerQueryService.query() query method', () => {
-  let mockAssembler: MockAssembler<any, any, any, any, any, any>;
-  let mockQueryService: MockAppQueryService<any, any, any>;
+  class TestDTO {
+    firstName!: string;
+
+    lastName!: string;
+  }
+
+  class TestEntity {
+    first!: string;
+
+    last!: string;
+  }
+
+  @Assembler(TestDTO, TestEntity)
+  class TestAssembler extends AbstractAssembler<TestDTO, TestEntity> {
+    convertToCreateEntity(create: DeepPartial<TestDTO>): DeepPartial<TestEntity> {
+      return {
+        first: create.firstName,
+        last: create.lastName,
+      };
+    }
+
+    convertToUpdateEntity(update: DeepPartial<TestDTO>): DeepPartial<TestEntity> {
+      return {
+        first: update.firstName,
+        last: update.lastName,
+      };
+    }
+
+    convertToDTO(entity: TestEntity): TestDTO {
+      return {
+        firstName: entity.first,
+        lastName: entity.last,
+      };
+    }
+
+    convertToEntity(dto: TestDTO): TestEntity {
+      return {
+        first: dto.firstName,
+        last: dto.lastName,
+      };
+    }
+
+    convertQuery(query: Query<TestDTO>): Query<TestEntity> {
+      return transformQuery(query, {
+        firstName: 'first',
+        lastName: 'last',
+      });
+    }
+
+    convertAggregateQuery(aggregate: AggregateQuery<TestDTO>): AggregateQuery<TestEntity> {
+      return transformAggregateQuery(aggregate, {
+        firstName: 'first',
+        lastName: 'last',
+      });
+    }
+
+    convertAggregateResponse(aggregate: AggregateResponse<TestEntity>): AggregateResponse<TestDTO> {
+      return transformAggregateResponse(aggregate, {
+        first: 'firstName',
+        last: 'lastName',
+      });
+    }
+  }
+
+  // const testDTO: TestDTO = { firstName: 'foo', lastName: 'bar' };
+  // const testEntity: TestEntity = { first: 'foo', last: 'bar' };
+
+  let mockAssembler: TestAssembler;
+  let mockQueryService: MockAppQueryService;
   let service: AppAssemblerQueryService<any, any, any, any, any, any>;
 
   beforeEach(() => {
-    mockAssembler = new MockAssembler() as any;
+    mockAssembler = new TestAssembler();
     mockQueryService = new MockAppQueryService() as any;
     service = new AppAssemblerQueryService(mockAssembler as any, mockQueryService as any);
   });
@@ -37,8 +100,8 @@ describe('AppAssemblerQueryService.query() query method', () => {
       const dtos = [{ id: 'a' }, { id: 'b' }];
 
       mockQueryService.query.mockResolvedValue(entities as any as never);
-      mockAssembler.convertQuery.mockReturnValue(query as any);
-      mockAssembler.convertAsyncToDTOs.mockResolvedValue(dtos as any as never);
+      jest.spyOn(mockAssembler, 'convertQuery').mockReturnValue(query as any);
+      (mockAssembler.convertAsyncToDTOs as jest.Mock<any, any>).mockResolvedValue(dtos as any as never);
 
       // Act
       const result = await service.query(query, opts);
@@ -59,8 +122,8 @@ describe('AppAssemblerQueryService.query() query method', () => {
       const dtos: any[] = [];
 
       mockQueryService.query.mockResolvedValue(entities as any as never);
-      mockAssembler.convertQuery.mockReturnValue(query as any);
-      mockAssembler.convertAsyncToDTOs.mockResolvedValue(dtos as any as never);
+      jest.spyOn(mockAssembler, 'convertQuery').mockReturnValue(query as any);
+      (mockAssembler.convertAsyncToDTOs as jest.Mock).mockResolvedValue(dtos as any as never);
 
       // Act
       const result = await service.query(query, opts);
@@ -76,8 +139,8 @@ describe('AppAssemblerQueryService.query() query method', () => {
       const dtos = [{ id: 'a' }];
 
       mockQueryService.query.mockResolvedValue(entities as any as never);
-      mockAssembler.convertQuery.mockReturnValue(query as any);
-      mockAssembler.convertAsyncToDTOs.mockResolvedValue(dtos as any as never);
+      jest.spyOn(mockAssembler, 'convertQuery').mockReturnValue(query as any);
+      (mockAssembler.convertAsyncToDTOs as jest.Mock).mockResolvedValue(dtos as any as never);
 
       // Act
       const result = await service.query(query, null as any);
@@ -93,7 +156,7 @@ describe('AppAssemblerQueryService.query() query method', () => {
       const error = new Error('Query service error');
 
       mockQueryService.query.mockRejectedValue(error as never);
-      mockAssembler.convertQuery.mockReturnValue(query as any);
+      jest.spyOn(mockAssembler, 'convertQuery').mockReturnValue(query as any);
 
       // Act & Assert
       await expect(service.query(query, opts)).rejects.toThrow('Query service error');

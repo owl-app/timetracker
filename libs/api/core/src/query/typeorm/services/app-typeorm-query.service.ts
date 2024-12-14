@@ -22,7 +22,7 @@ import { RelationQueryBuilder } from '../query/relation-query.builder';
 import { EntitySetter } from '../../../registry/interfaces/entity-setter';
 import { TransactionalRepository } from '../../../database/repository/transactional.repository';
 import DomainEventableEntity from '../../../database/entity/domain-eventable.entity';
-import { AppQueryService } from '../../core/services/app-query.service';
+import { AppQueryService } from '../../core/interfaces/app-query.service';
 
 import { QueryOptions } from '../../core/interfaces/query-options';
 

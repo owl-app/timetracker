@@ -1,5 +1,5 @@
 import { DeepPartial, QueryService, Filter, Query } from '@owl-app/nestjs-query-core';
-import { QueryOptions } from '../interfaces/query-options';
+import { QueryOptions } from './query-options';
 
 /**
  * Base interface for all QueryServices.

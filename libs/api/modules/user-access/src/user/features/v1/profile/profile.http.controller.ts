@@ -14,7 +14,7 @@ import {
 } from '@owl-app/lib-contracts';
 import { InjectAssemblerQueryService } from '@owl-app/nestjs-query-core';
 
-import type { AppQueryService } from '@owl-app/lib-api-core/query/core/services/app-query.service';
+import type { AppQueryService } from '@owl-app/lib-api-core/query/core/interfaces/app-query.service';
 import { ValibotValidationPipe } from '@owl-app/lib-api-core/validation/valibot.pipe';
 import { ApiErrorResponse } from '@owl-app/lib-api-core/api/api-error.response';
 import { RoutePermissions } from '@owl-app/lib-api-core/rbac/decorators/route-permission';

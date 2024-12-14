@@ -5,7 +5,7 @@ import {
   Filter,
   Query,
 } from '@owl-app/nestjs-query-core';
-import { AppQueryService } from './app-query.service';
+import { AppQueryService } from '../interfaces/app-query.service';
 import { QueryOptions } from '../interfaces/query-options';
 
 export class AppAssemblerQueryService<
